@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>AI This Week</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a colourful gradient masthead, a category filter bar, then a card grid
+   (one featured story across the top, the rest in auto-fill columns that stack on phones).
+   Each category owns one colour (--c) used for its illustration, tag and filter chip. */
+:root {
+  --bg: #f5f3ff;
+  --surface: #ffffff;
+  --ink: #1b1640;
+  --ink-soft: #5b5778;
+  --rule: #e4e0f5;
+  --models: #7c3aed;
+  --products: #0891b2;
+  --business: #d97706;
+  --research: #2563eb;
+  --policy: #e11d48;
+  --enterprise: #059669;
+  --hero-a: #5b21b6;
+  --hero-b: #0e7490;
+  --hero-c: #f59e0b;
+  --chip-ink: #ffffff;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f0c1f;
+    --surface: #18142e;
+    --ink: #f1eeff;
+    --ink-soft: #aba6c9;
+    --rule: #2d2750;
+    --models: #b79cff;
+    --products: #5fd3ea;
+    --business: #fbbf5a;
+    --research: #7fb0ff;
+    --policy: #ff8fa6;
+    --enterprise: #34d399;
+    --hero-a: #3b1d7a;
+    --hero-b: #0b4a5c;
+    --hero-c: #b45309;
+    --chip-ink: #0f0c1f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f0c1f;
+  --surface: #18142e;
+  --ink: #f1eeff;
+  --ink-soft: #aba6c9;
+  --rule: #2d2750;
+  --models: #b79cff;
+  --products: #5fd3ea;
+  --business: #fbbf5a;
+  --research: #7fb0ff;
+  --policy: #ff8fa6;
+  --enterprise: #34d399;
+  --hero-a: #3b1d7a;
+  --hero-b: #0b4a5c;
+  --hero-c: #b45309;
+  --chip-ink: #0f0c1f;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 56px;
+}
+.wrap { max-width: 1120px; margin: 0 auto; }
+
+/* Masthead */
+.hero {
+  position: relative;
+  overflow: hidden;
+  color: #ffffff;
+  padding: 44px 24px 36px;
+  margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0;
+  background:
+    radial-gradient(900px 300px at 85% -10%, rgba(255, 255, 255, 0.18), transparent 60%),
+    linear-gradient(120deg, var(--hero-a) 0%, var(--hero-b) 60%, var(--hero-c) 130%);
+}
+.hero-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: center;
+}
+@media (min-width: 760px) {
+  .hero-inner { grid-template-columns: 1.1fr 0.9fr; }
+}
+.kicker {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  margin: 0 0 12px;
+}
+h1 {
+  font-family: "Newsreader", Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(2.4rem, 7vw, 3.8rem);
+  line-height: 1.02;
+  margin: 0 0 14px;
+  text-wrap: balance;
+}
+.deck { margin: 0; font-size: 1.02rem; opacity: 0.92; max-width: 52ch; text-wrap: pretty; }
+.stats { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.stat {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 13px;
+  backdrop-filter: blur(4px);
+}
+.stat b { font-weight: 600; }
+.hero-art { width: 100%; height: auto; max-width: 380px; justify-self: center; }
+
+/* Filters */
+.filters {
+  max-width: 1120px;
+  margin: 28px auto 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--c, var(--ink-soft));
+  background: var(--surface);
+  color: var(--c, var(--ink));
+  cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--c, var(--ink)); color: var(--chip-ink); }
+.chip:focus-visible, a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.chip.all { --c: var(--ink); }
+
+/* Cards */
+.grid {
+  max-width: 1120px;
+  margin: 20px auto 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 18px;
+}
+.card {
+  --c: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  box-shadow: 0 1px 2px rgba(20, 10, 60, 0.05), 0 8px 24px -12px color-mix(in srgb, var(--c) 45%, transparent);
+}
+.card[data-cat="models"] { --c: var(--models); }
+.card[data-cat="products"] { --c: var(--products); }
+.card[data-cat="business"] { --c: var(--business); }
+.card[data-cat="research"] { --c: var(--research); }
+.card[data-cat="policy"] { --c: var(--policy); }
+.card[data-cat="enterprise"] { --c: var(--enterprise); }
+
+.art-band {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--c) 22%, var(--surface)), color-mix(in srgb, var(--c) 8%, var(--surface)));
+  padding: 14px 18px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.art { display: block; width: 100%; height: auto; max-height: 150px; color: var(--c); }
+.card-body { padding: 16px 20px 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.card.featured { grid-column: 1 / -1; flex-direction: column; }
+@media (min-width: 760px) {
+  .card.featured { flex-direction: row; }
+  .card.featured .art-band { flex: 0 0 44%; border-bottom: 0; border-right: 1px solid var(--rule); padding: 18px 0 18px 18px; display: flex; align-items: center; }
+  .card.featured .art { max-height: 280px; }
+  .card.featured .card-body { padding: 26px 28px; justify-content: center; }
+}
+.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--ink-soft); }
+.tag {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: #ffffff;
+  background: var(--c);
+}
+.tag.caution { background: var(--ink); color: var(--surface); }
+h2 {
+  font-family: "Newsreader", Georgia, serif;
+  font-weight: 600;
+  font-size: 1.32rem;
+  line-height: 1.2;
+  margin: 0;
+  text-wrap: balance;
+}
+.card.featured h2 { font-size: 1.9rem; }
+.summary { margin: 0; text-wrap: pretty; }
+.why {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--c) 10%, var(--surface));
+  font-size: 13.5px;
+  color: var(--ink-soft);
+}
+.why b { font-weight: 600; color: var(--c); }
+.sources { margin-top: auto; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; padding-top: 4px; }
+.sources a { color: var(--c); font-weight: 500; text-decoration: none; border-bottom: 1.5px solid currentColor; }
+.sources a:hover { opacity: 0.8; }
+
+.note {
+  margin: 36px auto 0;
+  max-width: 1120px;
+  padding: 20px 22px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--hero-c) 18%, var(--surface)), var(--surface));
+  border: 1px solid var(--rule);
+  font-size: 13.5px;
+  color: var(--ink-soft);
+}
+.note h3 { margin: 0 0 6px; font-family: "Newsreader", Georgia, serif; font-size: 1.15rem; font-weight: 600; color: var(--ink); }
+.note ul { margin: 8px 0 0; padding-left: 18px; }
+.note li { margin-bottom: 4px; }
+.card[hidden], .chip[hidden] { display: none !important; }
+@media (prefers-reduced-motion: no-preference) {
+  .card { transition: transform 0.2s ease; }
+  .card:hover { transform: translateY(-2px); }
+}
+</style>
+</head>
+<body>
+
+<!-- Illustrations: one per category, drawn in the category colour (currentColor). -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="art-models" viewBox="0 0 320 150">
+      <!-- A glowing processor chip with circuit traces -->
+      <g opacity="0.25"><rect x="10" y="20" width="300" height="110" rx="14" fill="currentColor"/></g>
+      <g stroke="currentColor" stroke-width="3" fill="none" opacity="0.7">
+        <path d="M40 40H90M40 75H90M40 110H90M230 40H280M230 75H280M230 110H280"/>
+        <path d="M90 40V20M120 40V20M150 40V20M180 40V20M210 40V20M90 130V150M120 130V150M150 130V150M180 130V150M210 130V150"/>
+      </g>
+      <rect x="110" y="48" width="100" height="64" rx="10" fill="currentColor"/>
+      <text x="160" y="86" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="18" font-weight="600" fill="#ffffff">AI</text>
+      <circle cx="40" cy="40" r="6" fill="currentColor"/><circle cx="40" cy="75" r="6" fill="currentColor"/><circle cx="40" cy="110" r="6" fill="currentColor"/>
+      <circle cx="280" cy="40" r="6" fill="currentColor"/><circle cx="280" cy="75" r="6" fill="currentColor"/><circle cx="280" cy="110" r="6" fill="currentColor"/>
+    </symbol>
+    <symbol id="art-products" viewBox="0 0 320 150">
+      <!-- A browser window with a sparkle, for product launches -->
+      <rect x="40" y="18" width="240" height="118" rx="12" fill="currentColor" opacity="0.2"/>
+      <rect x="40" y="18" width="240" height="26" rx="12" fill="currentColor"/>
+      <rect x="40" y="32" width="240" height="12" fill="currentColor"/>
+      <circle cx="56" cy="31" r="4" fill="#ffffff" opacity="0.9"/><circle cx="70" cy="31" r="4" fill="#ffffff" opacity="0.6"/><circle cx="84" cy="31" r="4" fill="#ffffff" opacity="0.4"/>
+      <rect x="62" y="62" width="110" height="10" rx="5" fill="currentColor" opacity="0.8"/>
+      <rect x="62" y="82" width="170" height="8" rx="4" fill="currentColor" opacity="0.45"/>
+      <rect x="62" y="98" width="130" height="8" rx="4" fill="currentColor" opacity="0.45"/>
+      <path d="M248 58 L252 70 L264 74 L252 78 L248 90 L244 78 L232 74 L244 70 Z" fill="#ffffff" opacity="0.95"/>
+    </symbol>
+    <symbol id="art-business" viewBox="0 0 320 150">
+      <!-- Rising bars and a skyline, for money and workforce stories -->
+      <g fill="currentColor" opacity="0.35"><rect x="36" y="110" width="22" height="30"/><rect x="66" y="96" width="22" height="44"/><rect x="96" y="80" width="22" height="60"/></g>
+      <g fill="currentColor"><rect x="150" y="50" width="26" height="90" rx="3"/><rect x="184" y="34" width="26" height="106" rx="3"/><rect x="218" y="62" width="26" height="78" rx="3"/></g>
+      <path d="M26 118 L120 70 L180 40 L260 24" stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="260" cy="24" r="7" fill="#ffffff"/>
+      <g fill="#ffffff" opacity="0.85"><rect x="155" y="60" width="6" height="8"/><rect x="167" y="60" width="6" height="8"/><rect x="189" y="44" width="6" height="8"/><rect x="201" y="44" width="6" height="8"/><rect x="189" y="62" width="6" height="8"/><rect x="223" y="72" width="6" height="8"/><rect x="235" y="72" width="6" height="8"/></g>
+    </symbol>
+    <symbol id="art-research" viewBox="0 0 320 150">
+      <!-- A flask with a network of nodes, for research and reports -->
+      <path d="M130 20 H190 M142 20 V60 L100 122 Q94 136 110 136 H210 Q226 136 220 122 L178 60 V20" fill="currentColor" opacity="0.18" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M118 96 Q160 80 202 96 L214 122 Q218 130 206 130 H114 Q102 130 106 122 Z" fill="currentColor" opacity="0.7"/>
+      <g stroke="currentColor" stroke-width="2.5" opacity="0.8"><line x1="250" y1="40" x2="290" y2="72"/><line x1="290" y1="72" x2="262" y2="118"/><line x1="250" y1="40" x2="262" y2="118"/><line x1="250" y1="40" x2="222" y2="18"/></g>
+      <g fill="currentColor"><circle cx="250" cy="40" r="10"/><circle cx="290" cy="72" r="8"/><circle cx="262" cy="118" r="9"/><circle cx="222" cy="18" r="6"/></g>
+      <circle cx="158" cy="110" r="4" fill="#ffffff" opacity="0.9"/><circle cx="140" cy="118" r="3" fill="#ffffff" opacity="0.7"/><circle cx="176" cy="120" r="3" fill="#ffffff" opacity="0.7"/>
+    </symbol>
+    <symbol id="art-policy" viewBox="0 0 320 150">
+      <!-- Scales of justice, for regulation and policy -->
+      <rect x="150" y="26" width="8" height="106" rx="3" fill="currentColor"/>
+      <rect x="110" y="128" width="100" height="10" rx="5" fill="currentColor"/>
+      <circle cx="154" cy="28" r="10" fill="currentColor"/>
+      <path d="M60 52 H260" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+      <path d="M60 52 L36 98 M60 52 L84 98" stroke="currentColor" stroke-width="3"/>
+      <path d="M260 52 L236 98 M260 52 L284 98" stroke="currentColor" stroke-width="3"/>
+      <path d="M26 98 H94 Q60 118 26 98 Z" fill="currentColor" opacity="0.7"/>
+      <path d="M226 98 H294 Q260 118 226 98 Z" fill="currentColor" opacity="0.7"/>
+      <circle cx="260" cy="52" r="5" fill="#ffffff"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div>
+      <p class="kicker">Weekly AI briefing &middot; 25 Oct &ndash; 1 Nov 2026</p>
+      <h1>AI This Week</h1>
+      <p class="deck">The most significant AI developments from the past seven days: new models, product moves, workforce changes and research, each with a short summary and where it came from.</p>
+      <div class="stats" id="stats"></div>
+    </div>
+    <svg class="hero-art" viewBox="0 0 320 200" aria-hidden="true">
+      <!-- Stylised orbit of story nodes around a central model -->
+      <g fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="2">
+        <ellipse cx="160" cy="100" rx="130" ry="68"/>
+        <ellipse cx="160" cy="100" rx="82" ry="42" stroke-dasharray="4 6"/>
+      </g>
+      <circle cx="160" cy="100" r="36" fill="#ffffff" fill-opacity="0.2"/>
+      <circle cx="160" cy="100" r="22" fill="#ffffff"/>
+      <text x="160" y="106" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="600" fill="#5b21b6">AI</text>
+      <circle cx="30" cy="100" r="9" fill="#f59e0b"/>
+      <circle cx="290" cy="100" r="9" fill="#5fd3ea"/>
+      <circle cx="160" cy="32" r="8" fill="#ff8fa6"/>
+      <circle cx="160" cy="168" r="8" fill="#7fb0ff"/>
+      <circle cx="248" cy="48" r="6" fill="#ffffff"/>
+      <circle cx="72" cy="152" r="6" fill="#ffffff"/>
+    </svg>
+  </div>
+</header>
+
+<div class="filters" role="group" aria-label="Filter by category">
+  <button class="chip all" type="button" data-filter="all" aria-pressed="true">All</button>
+  <button class="chip" style="--c: var(--models)" type="button" data-filter="models" aria-pressed="false">Models</button>
+  <button class="chip" style="--c: var(--products)" type="button" data-filter="products" aria-pressed="false">Products</button>
+  <button class="chip" style="--c: var(--business)" type="button" data-filter="business" aria-pressed="false">Business</button>
+  <button class="chip" style="--c: var(--research)" type="button" data-filter="research" aria-pressed="false">Research</button>
+  <button class="chip" style="--c: var(--policy)" type="button" data-filter="policy" aria-pressed="false">Policy</button>
+  <button class="chip" style="--c: var(--enterprise)" type="button" data-filter="enterprise" aria-pressed="false">Enterprise adoption</button>
+</div>
+
+<main class="grid" id="feed">
+
+  <article class="card featured" data-cat="models">
+    <div class="art-band"><svg class="art" viewBox="0 0 320 150" aria-hidden="true"><use href="#art-models"/></svg></div>
+    <div class="card-body">
+      <div class="meta"><span class="tag">Model release</span><span>28 Oct 2026</span></div>
+      <h2>Google introduces Gemini 4 model aimed at cybersecurity and long-running work</h2>
+      <p class="summary">Google unveiled a new Gemini 4 model, which it describes as its strongest yet for cybersecurity and for agent-style tasks that run over long periods. Coverage disagrees on the model's name, with some outlets reporting "Carbon" and others "Argon", so check Google's own announcement for the exact product name.</p>
+      <p class="why"><b>Why it matters:</b> Frontier labs are now pitching models by workload, not just by general benchmark scores. Cybersecurity is one of the clearest targets.</p>
+      <div class="sources">
+        <a href="https://hellogrowth.ai/en/blog/google-ai-news-october-2026" target="_blank" rel="noopener">Source: HelloGrowth</a>
+        <a href="https://www.techaimag.com/ai-news/tracking-october-ai-in-2026-15-stories-you-actually-need-to-know" target="_blank" rel="noopener">Source: Tech AI Magazine</a>
+      </div>
+    </div>
+  </article>
+
+  <article class="card" data-cat="products">
+    <div class="art-band"><svg class="art" viewBox="0 0 320 150" aria-hidden="true"><use href="#art-products"/></svg></div>
+    <div class="card-body">
+      <div class="meta"><span class="tag">Product</span><span>29 Oct 2026</span></div>
+      <h2>OpenAI reverses planned cut to ChatGPT Pro usage limits</h2>
+      <p class="summary">OpenAI said it would not go ahead with a planned reduction in usage limits for ChatGPT Pro subscribers, a move that had drawn complaints from heavy users.</p>
+      <p class="why"><b>Why it matters:</b> Usage caps on top-tier plans show how expensive frontier models are to serve, and how far providers will bend to keep power users.</p>
+      <div class="sources"><a href="https://www.newegg.com/insider/ai-news-this-week-october-26-30-2026" target="_blank" rel="noopener">Source: Newegg Insider</a></div>
+    </div>
+  </article>
+
+  <article class="card" data-cat="products">
+    <div class="art-band"><svg class="art" viewBox="0 0 320 150" aria-hidden="true"><use href="#art-products"/></svg></div>
+    <div class="card-body">
+      <div class="meta"><span class="tag">Web platform</span><span>27 Oct 2026</span></div>
+      <h2>Opera proposes "WebAI" for running models locally in the browser</h2>
+      <p class="summary">Opera announced WebAI, a proposed web standard for running open-weight models, such as Google's Gemma, directly inside the browser on the user's own device.</p>
+      <p class="why"><b>Why it matters:</b> If it takes hold, sites could offer AI features without sending data to a cloud server.</p>
+      <div class="sources"><a href="https://www.newegg.com/insider/ai-news-this-week-october-26-30-2026" target="_blank" rel="noopener">Source: Newegg Insider</a></div>
+    </div>
+  </article>
+
+  <article class="card" data-cat="products">
+    <div class="art-band"><svg class="art" viewBox="0 0 320 150" aria-hidden="true"><use href="#art-products"/></svg></div>
+    <div class="card-body">
+      <div class="meta"><span class="tag">Assistant features</span><span>Week of 26 Oct 2026</span></div>
+      <h2>Gemini's Personal Intelligence reaches Android Auto</h2>
+      <p class="summary">Google began rolling out Gemini Personal Intelligence to Android Auto, bringing its personalized assistant features into the car dashboard.</p>
+      <p class="why"><b>Why it matters:</b> AI assistants are moving onto more everyday surfaces, including vehicles.</p>
+      <div class="sources"><a href="https://www.siliconreport.com/ai/archive/2026-10" target="_blank" rel="noopener">Source: SiliconReport archive</a></div>
+    </div>
+  </article>
+
+  <article class="card" data-cat="research">
+    <div class="art-band"><svg class="art" viewBox="0 0 320 150" aria-hidden="true"><use href="#art-research"/></svg></div>
+    <div class="card-body">
+      <div class="meta"><span class="tag">Research</span><span>Week of 26 Oct 2026</span></div>
+      <h2>Anthropic argues single agents can beat multi-agent setups</h2>
+      <p class="summary">Anthropic claimed that, for many tasks, a single AI agent can outperform a system of several coordinating agents, challenging a popular design pattern.</p>
+      <p class="why"><b>Why it matters:</b> Teams building agent systems may be adding coordination overhead that does not improve results.</p>
+      <div class="sources"><a href="https://www.siliconreport.com/ai/archive/2026-10" target="_blank" rel="noopener">Source: SiliconReport archive</a></div>
+    </div>
+  </article>
+
+  <article class="card" data-cat="research">
+    <div class="art-band"><svg class="art" viewBox="0 0 320 150" aria-hidden="true"><use href="#art-research"/></svg></div>
+    <div class="card-body">
+      <div class="meta"><span class="tag">Report</span><span>Late Oct 2026</span></div>
+      <h2>GitHub Octoverse: agents now draft a large share of pull requests</h2>
+      <p class="summary">GitHub's Octoverse report says more than 40% of pull requests by September 2026 began with an agent's first draft, up from 17% in March 2026.</p>
+      <p class="why"><b>Why it matters:</b> Coding agents have moved from experiments to a routine part of how code is written and reviewed.</p>
+      <div class="sources"><a href="https://www.newegg.com/insider/ai-news-this-week-october-26-30-2026" target="_blank" rel="noopener">Source: Newegg Insider</a></div>
+    </div>
+  </article>
+
+  <article class="card" data-cat="business">
+    <div class="art-band"><svg class="art" viewBox="0 0 320 150" aria-hidden="true"><use href="#art-business"/></svg></div>
+    <div class="card-body">
+      <div class="meta"><span class="tag">Workforce</span><span>Late Oct 2026</span></div>
+      <h2>Microsoft offers voluntary buyouts to about 60,000 staff</h2>
+      <p class="summary">Microsoft offered voluntary buyouts to roughly 60,000 eligible employees in the U.S., U.K., Canada and India, while it keeps spending heavily on AI infrastructure.</p>
+      <p class="why"><b>Why it matters:</b> Large AI capital spending is increasingly paired with headcount reduction, and investors are questioning whether that spending pays off.</p>
+      <div class="sources"><a href="https://www.newegg.com/insider/ai-news-this-week-october-26-30-2026" target="_blank" rel="noopener">Source: Newegg Insider</a></div>
+    </div>
+  </article>
+
+  <article class="card" data-cat="business">
+    <div class="art-band"><svg class="art" viewBox="0 0 320 150" aria-hidden="true"><use href="#art-business"/></svg></div>
+    <div class="card-body">
+      <div class="meta"><span class="tag">Events</span><span>27&ndash;29 Oct 2026</span></div>
+      <h2>ODSC AI West takes place in San Francisco</h2>
+      <p class="summary">The ODSC AI West conference ran from 27 to 29 October in San Francisco, with sessions on new tracks and speakers across applied AI and data science.</p>
+      <p class="why"><b>Why it matters:</b> A useful snapshot of what practitioners are focusing on right now.</p>
+      <div class="sources"><a href="https://opendatascience.com/tag/west-2026/" target="_blank" rel="noopener">Source: Open Data Science</a></div>
+    </div>
+  </article>
+
+  <article class="card" data-cat="enterprise">
+    <div class="art-band"><svg class="art" viewBox="0 0 320 150" aria-hidden="true"><use href="#art-business"/></svg></div>
+    <div class="card-body">
+      <div class="meta"><span class="tag">Harvard Business Review</span><span>Nov 2024 &middot; earlier piece</span></div>
+      <h2>How to Be Systematic About Adopting AI at Your Company</h2>
+      <p class="summary">John Winsor argues that few organizations have a structured plan for scaling AI. He recommends starting with small, controlled experiments across different parts of the business, then building the ones that work into everyday workflows and supporting infrastructure.</p>
+      <p class="why"><b>Why it matters:</b> Many enterprises are still stuck at the assessment stage. A staged rollout gives a clearer path from pilots to production.</p>
+      <div class="sources"><a href="https://hbr.org/2024/11/how-to-be-systematic-about-adopting-ai-at-your-company" target="_blank" rel="noopener">Source: Harvard Business Review</a></div>
+    </div>
+  </article>
+
+  <article class="card" data-cat="enterprise">
+    <div class="art-band"><svg class="art" viewBox="0 0 320 150" aria-hidden="true"><use href="#art-business"/></svg></div>
+    <div class="card-body">
+      <div class="meta"><span class="tag">The Economist</span><span>Reprint &middot; date unconfirmed</span></div>
+      <h2>Big tech is spending about $400bn on AI. Will business demand keep up?</h2>
+      <p class="summary">An Economist analysis, republished by The Nightly, asks whether the roughly $400bn that big tech is investing in AI will translate into broad business uptake. It considers whether slower adoption, narrower usage or stalled spending could burst the bubble.</p>
+      <p class="why"><b>Why it matters:</b> Enterprise demand, not just supply of models and data centres, will decide whether this spending pays off.</p>
+      <div class="sources"><a href="https://thenightly.com.au/from/the-economist/the-economist-big-tech-invests-400-billion-as-it-turns-blind-ai-to-worries-of-artificial-intelligence-bubble-c-15224911" target="_blank" rel="noopener">Source: The Nightly (reprint of The Economist)</a></div>
+    </div>
+  </article>
+
+</main>
+
+<section class="note" aria-labelledby="notes-h">
+  <h3 id="notes-h">How to read this briefing</h3>
+  <p style="margin:0">The news items are dated within 25 October to 1 November 2026. The two enterprise adoption pieces are not from this week: the HBR article is from November 2024, and the Economist piece is a reprint with no confirmed date. Most sources are aggregator roundups rather than company announcements, and details conflict across them. Verify model names, figures and dates against the primary announcement before relying on them.</p>
+  <ul>
+    <li><b>Policy:</b> I could not confirm any AI policy development in this window. The latest policy coverage I found was from earlier in 2026.</li>
+    <li><b>Funding:</b> Large AI funding rounds were reported in October, but the sources I found did not date them reliably to this week, so they are left out.</li>
+  </ul>
+</section>
+
+<script>
+(function () {
+  var cards = Array.prototype.slice.call(document.querySelectorAll('#feed .card'));
+  var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+  var stats = document.getElementById('stats');
+
+  // Count stories per category for the hero pills.
+  var counts = {};
+  cards.forEach(function (c) {
+    var k = c.getAttribute('data-cat');
+    counts[k] = (counts[k] || 0) + 1;
+  });
+  var html = '<span class="stat"><b>' + cards.length + '</b> stories</span>';
+  Object.keys(counts).forEach(function (k) {
+    html += '<span class="stat"><b>' + counts[k] + '</b> ' + k + '</span>';
+  });
+  stats.innerHTML = html;
+
+  // Filter the feed by category; "all" shows everything.
+  function apply(filter) {
+    cards.forEach(function (c) {
+      c.hidden = filter !== 'all' && c.getAttribute('data-cat') !== filter;
+    });
+    chips.forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-filter') === filter));
+    });
+  }
+  chips.forEach(function (b) {
+    b.addEventListener('click', function () { apply(b.getAttribute('data-filter')); });
+  });
+})();
+</script>
+</body>
+</html>
